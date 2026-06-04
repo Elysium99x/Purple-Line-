@@ -273,9 +273,37 @@ const LV_LABEL  = '#ede9fe';   // label pill background
 //   - roof arc at top
 //   - two vertical pillars
 //   - horizontal platform bar
-// Termini get a diamond-star flourish; interchanges get a fuchsia ring.
+// Termini: rounded square + dashed halo | Interchange: diamond + transfer arrows | Standard: rounded square
 function stationIconSVG(idx, isTerminus, isInterchange) {
-  const SZ = isTerminus ? 22 : isInterchange ? 20 : 17; // icon square size
+
+  // ── INTERCHANGE: fuchsia diamond with double transfer arrows ─────────────
+  if (isInterchange && !isTerminus) {
+    const SZ = 24;
+    const cx = SZ / 2, cy = SZ / 2;
+    const r = SZ * 0.46;
+    const top   = `${cx},${cy - r}`;
+    const right = `${cx + r},${cy}`;
+    const bot   = `${cx},${cy + r}`;
+    const left  = `${cx - r},${cy}`;
+    const aw = SZ * 0.28, ah = SZ * 0.07, gap = SZ * 0.09;
+    const aHeadW = SZ * 0.11, aHeadH = SZ * 0.14;
+    const ax = cx - aw / 2;
+    const y1 = cy - gap - ah;
+    const y2 = cy + gap;
+    return { svg: `
+      <filter id="shdw${idx}">
+        <feDropShadow dx="0" dy="1.5" stdDeviation="2" flood-color="rgba(232,121,249,0.45)"/>
+      </filter>
+      <polygon points="${top} ${right} ${bot} ${left}" fill="${LV_INTER}" filter="url(#shdw${idx})"/>
+      <rect x="${ax}" y="${y1}" width="${aw}" height="${ah}" rx="${ah/2}" fill="#fff"/>
+      <polygon points="${ax+aw},${y1-aHeadH/2+ah/2} ${ax+aw+aHeadW},${y1+ah/2} ${ax+aw},${y1+ah+aHeadH/2-ah/2}" fill="#fff"/>
+      <rect x="${ax}" y="${y2}" width="${aw}" height="${ah}" rx="${ah/2}" fill="#fff"/>
+      <polygon points="${ax},${y2-aHeadH/2+ah/2} ${ax-aHeadW},${y2+ah/2} ${ax},${y2+ah+aHeadH/2-ah/2}" fill="#fff"/>
+    `, size: SZ };
+  }
+
+  // ── TERMINUS & STANDARD: rounded square with platform symbol ─────────────
+  const SZ = isTerminus ? 22 : 17;
   const rx = 5;
   const fill  = isTerminus ? LV_DARK : LV_MID;
   const inner = '#fff';
@@ -293,10 +321,6 @@ function stationIconSVG(idx, isTerminus, isInterchange) {
   const platW = SZ * 0.62, platH = SZ * 0.09;
   const platX = cx - platW / 2, platY = pillarY + pillarH;
 
-  const interRing = isInterchange && !isTerminus
-    ? `<circle cx="${SZ/2}" cy="${SZ/2}" r="${SZ/2 + 2.5}" fill="none" stroke="${LV_INTER}" stroke-width="2.5" opacity="0.85"/>`
-    : '';
-
   const terminusStar = isTerminus
     ? `<circle cx="${SZ/2}" cy="${SZ/2}" r="${SZ/2 + 3}" fill="none" stroke="${LV_LIGHT}" stroke-width="2" stroke-dasharray="3 3"/>`
     : '';
@@ -306,7 +330,6 @@ function stationIconSVG(idx, isTerminus, isInterchange) {
       <feDropShadow dx="0" dy="1.5" stdDeviation="2" flood-color="rgba(91,31,138,0.35)"/>
     </filter>
     ${terminusStar}
-    ${interRing}
     <!-- icon body -->
     <rect x="0" y="0" width="${SZ}" height="${SZ}" rx="${rx}" fill="${fill}" filter="url(#shdw${idx})"/>
     <!-- roof arc -->
@@ -544,13 +567,12 @@ document.querySelector('.legend').innerHTML += `
       Station
     </div>
     <div class="legend-item">
-      <svg width="22" height="18" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="9" cy="9" r="9.5" fill="none" stroke="${LV_INTER}" stroke-width="2"/>
-        <rect x="1" y="1" width="16" height="16" rx="4" fill="${LV_MID}"/>
-        <path d="M 5 7 A 4 4 0 0 1 13 7" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-        <rect x="5.5" y="7.5" width="1.5" height="4" rx="1" fill="#fff"/>
-        <rect x="11" y="7.5" width="1.5" height="4" rx="1" fill="#fff"/>
-        <rect x="4.5" y="11.5" width="9" height="1.5" rx="0.75" fill="#fff"/>
+      <svg width="22" height="22" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="11,1 21,11 11,21 1,11" fill="${LV_INTER}"/>
+        <rect x="5.5" y="9.5" width="7" height="2" rx="1" fill="#fff"/>
+        <polygon points="12.5,7.5 15,11 12.5,14.5" fill="#fff"/>
+        <rect x="9.5" y="10.5" width="7" height="2" rx="1" fill="#fff"/>
+        <polygon points="9.5,8 7,11.5 9.5,15" fill="#fff"/>
       </svg>
       Interchange
     </div>
